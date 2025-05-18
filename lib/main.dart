@@ -1,45 +1,30 @@
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'views/auth/register_page.dart';
+import 'core/routes/app_router.dart';
+import 'core/routes/app_routes.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Set preferred orientations
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-  
-  // Set system UI overlay style for status bar
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Color(0xFF0A1929),
-    systemNavigationBarIconBrightness: Brightness.light,
-  ));
-  
-  runApp(const PacmentApp());
+  runApp(const MyApp());
 }
 
-class PacmentApp extends StatelessWidget {
-  const PacmentApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Pacment',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1947E6),
-          brightness: Brightness.dark,
-        ),
-        scaffoldBackgroundColor: const Color(0xFF0A1929),
-        useMaterial3: true,
+        // Apply Poppins font to the entire app
         fontFamily: 'Poppins',
+        // You can also customize the color scheme
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue, // Change to your brand color
+        ),
       ),
-      // home: const RegisterPage(),
+      initialRoute: AppRoutes.onboarding,
+      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }
