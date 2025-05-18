@@ -1,28 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:pacment/widgets/sosial_button.dart';
 import '../../widgets/custom_text_field.dart';
-import '../../widgets/sosial_button.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -42,7 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // Title
                 const Center(
                   child: Text(
-                    'Register',
+                    'Login',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -54,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // Subtitle
                 const Center(
                   child: Text(
-                    'Create your account',
+                    'Access account',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.white70,
@@ -63,7 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 24),
                 
-                // Social Register Options
+                // Social Login Buttons
                 SosialButton(
                   onFacebookPressed: () {
                     // Handle Facebook login
@@ -71,7 +69,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   onGooglePressed: () {
                     // Handle Google login
                   },
-                ),          
+                ),
+                
                 // Email Field
                 const Text(
                   'Email',
@@ -163,81 +162,25 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                
-                // Confirm Password Field
-                const Text(
-                  'Confirm Password',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: _obscureConfirmPassword,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: '••••••',
-                    hintStyle: const TextStyle(color: Colors.white38),
-                    filled: true,
-                    fillColor: Colors.white10,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Colors.blue),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.white54,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value != _passwordController.text) {
-                      return 'Passwords do not match';
+                      return 'Please enter your password';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 32),
                 
-                // Sign Up Button
+                // Sign In Button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : () async {
                       if (_formKey.currentState!.validate()) {
                         setState(() => _isLoading = true);
-                        // Handle registration
-                        // Simulate registration process
+                        // Handle login
+                        // Simulate login process
                         await Future.delayed(const Duration(seconds: 2));
                         setState(() => _isLoading = false);
-                        Navigator.pushReplacementNamed(context, '/login');
+                        // Navigate to home page
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -258,7 +201,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                           )
                         : const Text(
-                            'Sign Up',
+                            'Sign In',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -269,17 +212,19 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 24),
                 
-                // Login Link
+                // Register Link
                 Center(
                   child: TextButton(
-                    onPressed: () { Navigator.pushNamed(context, '/login'); },
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/register');
+                    },
                     child: const Text.rich(
                       TextSpan(
-                        text: 'Already have an account? ',
+                        text: "Don't have an account? ",
                         style: TextStyle(color: Colors.white54),
                         children: [
                           TextSpan(
-                            text: 'Login',
+                            text: 'Register',
                             style: TextStyle(
                               color: Colors.blue,
                               fontWeight: FontWeight.w600,
