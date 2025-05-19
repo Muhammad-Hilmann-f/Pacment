@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "820318220141",
+    "project_id": "pacment-806a6",
+    "storage_bucket": "pacment-806a6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:820318220141:android:06663b741e992b98b3f464",
+        "android_client_info": {
+          "package_name": "com.example.pacment"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZ6pN3ZquqyY0ue_wpCSeVOAO5L6myLMs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:820318220141:android:3c5ec3704f8744c9b3f464",
+        "android_client_info": {
+          "package_name": "pacmet.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZ6pN3ZquqyY0ue_wpCSeVOAO5L6myLMs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

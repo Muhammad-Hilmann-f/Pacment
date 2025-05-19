@@ -1,9 +1,14 @@
-
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'firebase_options.dart';
 import 'core/routes/app_router.dart';
 import 'core/routes/app_routes.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -13,14 +18,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Pacment',
+      title: 'Fixx',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Apply Poppins font to the entire app
-        fontFamily: 'Poppins',
-        // You can also customize the color scheme
+        fontFamily: 'Roboto',
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue, // Change to your brand color
+          seedColor: Colors.green,
         ),
       ),
       initialRoute: AppRoutes.onboarding,
@@ -28,3 +31,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

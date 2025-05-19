@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/sosial_button.dart';
 import '../../widgets/form_auth.dart';
+import '../../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService(); // Initialize AuthService
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -26,10 +29,29 @@ class _LoginPageState extends State<LoginPage> {
   void _handleSubmit() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      // Handle login
-      await Future.delayed(const Duration(seconds: 2));
+      
+      // Get email and password
+      String email = _emailController.text.trim();
+      String password = _passwordController.text.trim();
+      
+      // Login using AuthService
+      User? user = await _authService.loginWithEmail(email, password);
+      
+      if (user != null) {
+        print('Login successful: ${user.uid}');
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        print('Login failed');
+        // Show error message to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login failed. Please check your credentials.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      
       setState(() => _isLoading = false);
-      Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 
@@ -93,6 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                   });
                 },
                 onSubmit: _handleSubmit,
+                isLogin: true,
               ),
               
               const SizedBox(height: 24),

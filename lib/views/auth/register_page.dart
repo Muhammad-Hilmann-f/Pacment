@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/sosial_button.dart';
 import '../../widgets/form_auth.dart';
+import '../../services/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -14,6 +16,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _authService = AuthService(); // Initialize AuthService
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -29,14 +32,31 @@ class _RegisterPageState extends State<RegisterPage> {
   void _handleSubmit() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      // Handle registration
-      await Future.delayed(const Duration(seconds: 2));
+
+      // Ambil email dan password dari controller
+      String email = _emailController.text.trim();
+      String password = _passwordController.text.trim();
+
+      // Registrasi pengguna menggunakan AuthService
+      User? user = await _authService.registerWithEmail(email, password);
+
+      if (user != null) {
+        print('Registrasi berhasil: ${user.uid}');
+        Navigator.pushReplacementNamed(context, '/login');
+      } else {
+        print('Registrasi gagal');
+        // Show error message to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registration failed. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
       setState(() => _isLoading = false);
-      Navigator.pushReplacementNamed(context, '/login');
     }
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
