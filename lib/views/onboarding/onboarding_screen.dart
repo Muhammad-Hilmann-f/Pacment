@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../services/onboarding_data.dart';
-import '../../widgets/onboarding_page.dart';
+import "../../services/onboarding_data.dart";
+import "../../widgets/onboarding_page.dart";
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
@@ -10,112 +10,99 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _controller = PageController();
+  final PageController _pageController = PageController();
   int _currentPage = 0;
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pageController.dispose();
     super.dispose();
+  }
+
+  void _onPageChanged(int page) {
+    setState(() {
+      _currentPage = page;
+    });
+  }
+
+  void _navigateToAuth() {
+    // Replace with your actual auth screen navigation
+    Navigator.pushNamed(context, '/register');
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
-      backgroundColor: const Color(0xFF0E1B38),
+      backgroundColor: const Color(0xFF0A1339), // Matching your app theme
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Column(
-              children: [
-                // PageView with flexible height
-                SizedBox(
-                  height: screenHeight * 0.75, // Takes 75% of screen height
-                  child: PageView.builder(
-                    controller: _controller,
-                    itemCount: onboardingData.length,
-                    onPageChanged: (index) {
-                      setState(() => _currentPage = index);
-                    },
-                    itemBuilder: (_, index) => Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.05, // 5% padding on sides
-                      ),
-                      child: OnboardingPage(model: onboardingData[index]),
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: onboardingData.length,
+                onPageChanged: _onPageChanged,
+                itemBuilder: (context, index) {
+                  return OnboardingPage(model: onboardingData[index]);
+                },
+              ),
+            ),
+            // Page indicators
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                onboardingData.length,
+                (index) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentPage == index
+                        ? Colors.blue
+                        : Colors.white.withOpacity(0.4),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            // Next/Get Started button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_currentPage == onboardingData.length - 1) {
+                      _navigateToAuth();
+                    } else {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeIn,
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4461F2), // Matching your button color
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    _currentPage == onboardingData.length - 1
+                        ? 'Get Started'
+                        : 'Next',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                
-                // Indicators
-                SizedBox(
-                  height: screenHeight * 0.05, // 5% of screen height
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        onboardingData.length,
-                        (index) => AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: _currentPage == index ? 16 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: _currentPage == index 
-                                ? Colors.white 
-                                : Colors.white24,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                
-                // Button section
-                SizedBox(
-                  height: screenHeight * 0.15, // 15% of screen height
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.1, // 10% padding on sides
-                      vertical: 16,
-                    ),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF5C6BC0),
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        if (_currentPage < onboardingData.length - 1) {
-                          _controller.nextPage(
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.ease,
-                          );
-                        } else {
-                          Navigator.pushNamed(context, '/register');
-                        }
-                      },
-                      child: Text(
-                        _currentPage == onboardingData.length - 1 
-                            ? "Get Started" 
-                            : "Next",
-                        style: const TextStyle(
-                          fontSize: 16, 
-                          color: Colors.white,
-                          
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+              ),
+            ),
+          ],
         ),
       ),
     );

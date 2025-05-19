@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../widgets/custom_text_field.dart';
 import '../../widgets/sosial_button.dart';
+import '../../widgets/form_auth.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -26,6 +26,18 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  void _handleSubmit() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      // Handle registration
+      await Future.delayed(const Duration(seconds: 2));
+      setState(() => _isLoading = false);
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,265 +45,92 @@ class _RegisterPageState extends State<RegisterPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                // Title
-                const Center(
-                  child: Text(
-                    'Register',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+          child: Column(
+            
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 40),
+               // Tombol Back
+            IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white,)),
+              // Title
+              const Center(
+                child: Text(
+                  'Register',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 8),
-                // Subtitle
-                const Center(
-                  child: Text(
-                    'Create your account',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Social Register Options
-                SosialButton(
-                  onFacebookPressed: () {
-                    // Handle Facebook login
-                  },
-                  onGooglePressed: () {
-                    // Handle Google login
-                  },
-                ),          
-                // Email Field
-                const Text(
-                  'Email',
+              ),
+              const SizedBox(height: 8),
+              // Subtitle
+              const Center(
+                child: Text(
+                  'Create your account',
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
                     color: Colors.white70,
                   ),
                 ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'example@gmail.com',
-                    hintStyle: const TextStyle(color: Colors.white38),
-                    filled: true,
-                    fillColor: Colors.white10,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Colors.blue),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                
-                // Password Field
-                const Text(
-                  'Password',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: '••••••',
-                    hintStyle: const TextStyle(color: Colors.white38),
-                    filled: true,
-                    fillColor: Colors.white10,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Colors.blue),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.white54,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                
-                // Confirm Password Field
-                const Text(
-                  'Confirm Password',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: _obscureConfirmPassword,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: '••••••',
-                    hintStyle: const TextStyle(color: Colors.white38),
-                    filled: true,
-                    fillColor: Colors.white10,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Colors.blue),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.white54,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value != _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-                
-                // Sign Up Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : () async {
-                      if (_formKey.currentState!.validate()) {
-                        setState(() => _isLoading = true);
-                        // Handle registration
-                        // Simulate registration process
-                        await Future.delayed(const Duration(seconds: 2));
-                        setState(() => _isLoading = false);
-                        Navigator.pushReplacementNamed(context, '/login');
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4461F2),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            'Sign Up',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Social Register Options
+              SosialButton(
+                onFacebookPressed: () {
+                  // Handle Facebook login
+                },
+                onGooglePressed: () {
+                  // Handle Google login
+                },
+              ),
+              //auth form 
+              AuthForm(
+                formKey: _formKey,
+                emailController: _emailController,
+                passwordController: _passwordController,
+                confirmPasswordController: _confirmPasswordController,
+                isLoading: _isLoading,
+                obscurePassword: _obscurePassword,
+                obscureConfirmPassword: _obscureConfirmPassword,
+                togglePasswordVisibility: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+                toggleConfirmPasswordVisibility: () {
+                  setState(() {
+                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                  });
+                },
+                onSubmit: _handleSubmit,
+                isLogin: false,
+              ),
+              const SizedBox(height: 24),
+              
+              // Login Link
+              Center(
+                child: TextButton(
+                  onPressed: () { Navigator.pushNamed(context, '/login'); },
+                  child: const Text.rich(
+                    TextSpan(
+                      text: 'Already have an account? ',
+                      style: TextStyle(color: Colors.white54),
+                      children: [
+                        TextSpan(
+                          text: 'Login',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.w600,
                           ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Login Link
-                Center(
-                  child: TextButton(
-                    onPressed: () { Navigator.pushNamed(context, '/login'); },
-                    child: const Text.rich(
-                      TextSpan(
-                        text: 'Already have an account? ',
-                        style: TextStyle(color: Colors.white54),
-                        children: [
-                          TextSpan(
-                            text: 'Login',
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

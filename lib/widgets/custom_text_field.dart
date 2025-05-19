@@ -7,6 +7,8 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
+  final IconData? suffixIcon;
+  final VoidCallback? onSuffixIconTap;
 
   const CustomTextField({
     super.key,
@@ -15,6 +17,9 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.validator,
+    this.suffixIcon,
+    this.onSuffixIconTap,
+    
   });
 
   @override
@@ -35,8 +40,14 @@ class CustomTextField extends StatelessWidget {
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 14,
+          vertical: 18, // Increased padding to match design
         ),
+        suffixIcon: suffixIcon != null
+            ? IconButton(
+                icon: Icon(suffixIcon, color: const Color(0xFF9370DB)),
+                onPressed: onSuffixIconTap,
+              )
+            : null,
       ),
       validator: validator,
     );
