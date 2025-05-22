@@ -18,10 +18,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fixx',
+      title: 'Pacment',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Roboto',
+        fontFamily: 'Poppins',
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.green,
         ),

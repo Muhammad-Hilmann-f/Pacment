@@ -25,6 +25,7 @@ flutter:
   
   assets:
       - lib/assets/images/logo-pacment.jpg
+      - lib/assets/images/Motocycle.png
 
   fonts:
     - family: Poppins
