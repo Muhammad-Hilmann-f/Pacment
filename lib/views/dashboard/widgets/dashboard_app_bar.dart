@@ -3,10 +3,12 @@ import '../../../widgets/profile_avatar.dart';
 
 class DashboardAppBar extends StatelessWidget {
   final VoidCallback onProfileTap;
+  final VoidCallback? onMenuTap; // Added menu callback
 
   const DashboardAppBar({
     super.key,
     required this.onProfileTap,
+    this.onMenuTap,
   });
 
   @override
@@ -16,7 +18,7 @@ class DashboardAppBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _MenuButton(),
+          _MenuButton(onTap: onMenuTap ?? () => Scaffold.of(context).openDrawer()),
           const _AppTitle(),
           ProfileAvatar(onTap: onProfileTap),
         ],
@@ -26,18 +28,25 @@ class DashboardAppBar extends StatelessWidget {
 }
 
 class _MenuButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _MenuButton({required this.onTap});
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: const EdgeInsets.all(8),
-      child: const Icon(
-        Icons.menu,
-        color: Colors.white,
-        size: 22,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: const EdgeInsets.all(8),
+        child: const Icon(
+          Icons.menu,
+          color: Colors.white,
+          size: 22,
+        ),
       ),
     );
   }

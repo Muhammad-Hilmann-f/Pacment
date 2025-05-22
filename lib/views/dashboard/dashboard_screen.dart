@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // import '../../widgets/custom_text_field.dart';
 import '../qrCode/qr_scan_screen.dart';
+import '../navigations/sidebar.dart';
 import 'widgets/dashboard_app_bar.dart';
 import 'widgets/dashboard_content.dart';
 import 'dialog/profile_dialog.dart';
@@ -25,6 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppSidebar(currentRoute: '/dashboard'), // Add sidebar
       body: Container(
         width: double.infinity,
         decoration: const GradientBackground(),
