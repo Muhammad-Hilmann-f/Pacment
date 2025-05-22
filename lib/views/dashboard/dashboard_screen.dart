@@ -1,6 +1,8 @@
-
 import 'package:flutter/material.dart';
-import '/widgets/custom_text_field.dart';
+import "package:firebase_auth/firebase_auth.dart";
+import '../../widgets/custom_text_field.dart';
+import '../../widgets/profile_avatar.dart';
+import '../qrCode/qr_scan_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -10,8 +12,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final TextEditingController _trackingController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
+  final _trackingController = TextEditingController();
+  final _nameController = TextEditingController();
 
   @override
   void dispose() {
@@ -25,27 +27,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF9370DB), // Light purple
-              Color(0xFF1E213A), // Dark navy at bottom
+              const Color(0xFF9370DB),
+              const Color(0xFF1E213A),
             ],
-            stops: [0.65, 1.0],
+            stops: const [0.65, 1.0],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // App Bar
               _buildAppBar(),
-              
-              // Main Content
-              Expanded(
-                child: _buildMainContent(),
-              ),
+              Expanded(child: _buildMainContent()),
             ],
           ),
         ),
@@ -59,40 +56,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Menu Icon
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.all(8),
-            child: const Icon(
-              Icons.menu,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-          
-          // App Logo
-          Text('Pacment', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),),
-
-          
-          // Profile Icon
-          IconButton(
-            icon: const Icon(
-              Icons.person,
-              color: Colors.white,
-              size: 22,
-            ),
-            onPressed: () {
-              // Add your onPressed functionality here
+          _buildMenuButton(),
+          _buildTitle(),
+          ProfileAvatar(
+            onTap: () {
+              _showProfileDialog(context);
             },
-            padding: const EdgeInsets.all(8),
-            constraints: const BoxConstraints(),
-            splashRadius: 24,
-            color: Colors.white.withOpacity(0.2),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMenuButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: const Icon(
+        Icons.menu,
+        color: Colors.white,
+        size: 22,
+      ),
+    );
+  }
+
+  Widget _buildTitle() {
+    return const Text(
+      'Pacment',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
       ),
     );
   }
@@ -106,56 +103,101 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            
-            // Title
-            const Text(
-              'Track your shipment',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            
+            _buildHeading(),
             const SizedBox(height: 12),
-            
-            // Subtitle
-            Text(
-              'Please enter your tracking number',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: 14,
-              ),
-            ),
-            
+            _buildSubheading(),
             const SizedBox(height: 24),
-            
-            // Tracking Number Input Field
-            CustomTextField(
-              controller: _trackingController,
-              hintText: 'Enter tracking number',
-              suffixIcon: Icons.numbers_rounded,
-              onSuffixIconTap: () {
-                // Handle QR code scanning
-              },
-            ),
-            
+            _buildTextField(),
             const SizedBox(height: 16),
-            
-            // const SizedBox(height: 30),
-            
-            // Delivery Illustration
-            // Center(
-            //   child: Image.asset(
-            //     'assets/images/delivery_illustration.png',
-            //     height: 200,
-            //     width: double.infinity,
-            //     fit: BoxFit.contain,
-            //   ),
-            // ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildHeading() {
+    return const Text(
+      'Track your shipment',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  Widget _buildSubheading() {
+    return Text(
+      'Please enter your tracking number or qr code',
+      style: TextStyle(
+        color: Colors.white.withOpacity(0.8),
+        fontSize: 14,
+      ),
+    );
+  }
+
+  Widget _buildTextField() {
+    return CustomTextField(
+      controller: _trackingController,
+      hintText: 'Enter tracking number or qr code',
+      suffixIcon: Icons.qr_code_scanner,
+      onSuffixIconTap: () async {
+        // Handle QR code scanning
+        final result = await Navigator.push(context, MaterialPageRoute(
+          builder: (context) => const QRScanScreen(),
+        ),
+        );
+        if (result != null && result.isNotEmpty) {
+          setState(() {
+            _trackingController.text = result;
+          });
+          
+        }
+      },
+    );
+  }
+
+  void _showProfileDialog(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E213A),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Hello, ${user?.displayName ?? 'User'}',
+            style: const TextStyle(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (user?.email != null)
+                Text(
+                  user!.email!,
+                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  if (context.mounted) {
+                    Navigator.of(context).pushReplacementNamed('/login');
+                  }
+                },
+                icon: const Icon(Icons.logout, color: Colors.white),
+                label: const Text('Logout'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
+
