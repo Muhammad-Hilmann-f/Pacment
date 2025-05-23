@@ -4,12 +4,12 @@ import 'tracking_input_section.dart';
 import 'motorcycle_image_widget.dart';
 
 class DashboardContent extends StatelessWidget {
-  final TextEditingController trackingController;
   final VoidCallback onQRScan;
+  final Function(String) onTrack;
 
   const DashboardContent({
     super.key,
-    required this.trackingController,
+    required this.onTrack,
     required this.onQRScan,
   });
 
@@ -26,8 +26,8 @@ class DashboardContent extends StatelessWidget {
             const GreetingSection(),
             const SizedBox(height: 24),
             TrackingInputSection(
-              controller: trackingController,
               onQRScan: onQRScan,
+              onTrack: onTrack,
             ),
             const SizedBox(height: 16),
             const MotorcycleImageWidget(),

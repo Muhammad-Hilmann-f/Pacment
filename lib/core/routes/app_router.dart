@@ -3,6 +3,8 @@ import '../../views/onboarding/onboarding_screen.dart';
 import '../../views/auth/register_page.dart';
 import '../../views/auth/login_page.dart';
 import '../../views/dashboard/dashboard_screen.dart';
+import '../../views/tracking/tracking_result_screen.dart';
+import '../../core/models/tracking_models.dart'; 
 import 'app_routes.dart';
 
 class AppRouter {
@@ -16,13 +18,25 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const LoginPage());
       case AppRoutes.dashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
-      default:
+      case AppRoutes.trackingResult:
+        // Pastikan arguments adalah TrackingInfo
+        final trackingInfo = settings.arguments as TrackingInfo?;
+        if (trackingInfo == null) {
+          return _errorRoute('Data tracking tidak valid');
+        }
         return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(child: Text('No route defined for ${settings.name}')),
-          ),
+          builder: (_) => TrackingResultScreen(trackingInfo: trackingInfo),
         );
+      default:
+        return _errorRoute('Route tidak ditemukan');
     }
   }
-}
 
+  static Route<dynamic> _errorRoute(String message) {
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        body: Center(child: Text(message)),
+      ),
+    );
+  }
+}

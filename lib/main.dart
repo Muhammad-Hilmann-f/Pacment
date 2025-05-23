@@ -1,8 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'core/routes/app_router.dart';
 import 'core/routes/app_routes.dart';
+import 'core/controllers/tracking_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,18 +19,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Pacment',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Poppins',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TrackingController()),
+      ],
+      child: MaterialApp(
+        title: 'Pacment',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          fontFamily: 'Poppins',
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.green,
+          ),
         ),
+        initialRoute: AppRoutes.onboarding,
+        onGenerateRoute: AppRouter.generateRoute,
       ),
-      initialRoute: AppRoutes.onboarding,
-      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }
-
