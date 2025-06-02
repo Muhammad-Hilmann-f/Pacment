@@ -15,7 +15,10 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService(); // Initialize AuthService
+  
+  // Biarkan inisialisasi AuthService seperti ini
+  final _authService = AuthService(); // Menggunakan constructor default (tanpa parameter)
+
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -30,29 +33,56 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       
-      // Get email and password
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
       
-      // Login using AuthService
-      User? user = await _authService.loginWithEmail(email, password);
-      
+      try {
+        User? user = await _authService.loginWithEmail(email, password);
+        
+        if (user != null) {
+          print('Login successful: ${user.uid}');
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        } else {
+          // Ini adalah fallback jika loginWithEmail mengembalikan null tanpa Exception
+          _showErrorSnackBar('Login failed. Please check your credentials.');
+        }
+      } catch (e) {
+        // Menangkap exception yang dilempar dari AuthService
+        _showErrorSnackBar(e.toString()); 
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  // <--- TAMBAHKAN METHOD INI UNTUK GOOGLE SIGN-IN
+  void _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      User? user = await _authService.signInWithGoogle(); // Panggil method Google Sign-In
       if (user != null) {
-        print('Login successful: ${user.uid}');
+        print('Google Sign-In successful: ${user.uid}');
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
-        print('Login failed');
-        // Show error message to user
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login failed. Please check your credentials.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        print('Google Sign-In cancelled or failed without explicit error.');
+        _showErrorSnackBar('Google Sign-In cancelled or failed.'); // Pengguna membatalkan
       }
-      
+    } catch (e) {
+      print('Google Sign-In error: $e');
+      _showErrorSnackBar(e.toString()); // Menampilkan error dari proses Google Sign-In
+    } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  // Helper untuk menampilkan SnackBar
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   @override
@@ -67,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               const SizedBox(height: 40),
               // Tombol Back
-            IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white,)),
+              IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white,)),
               // Title
               const Center(
                 child: Text(
@@ -95,11 +125,9 @@ class _LoginPageState extends State<LoginPage> {
               // Social Login Options
               SosialButton(
                 onFacebookPressed: () {
-                  // Handle Facebook login
+                  _showErrorSnackBar('Facebook login not implemented yet.');
                 },
-                onGooglePressed: () {
-                  // Handle Google login
-                },
+                onGooglePressed: _handleGoogleSignIn, // <--- PANGGIL METHOD INI
               ),
               
               // Auth Form

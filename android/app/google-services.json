@@ -12,7 +12,12 @@
           "package_name": "com.example.pacment"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "820318220141-qrd1v38jj480eurbp02gs3bml6p01cqi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDZ6pN3ZquqyY0ue_wpCSeVOAO5L6myLMs"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "820318220141-qrd1v38jj480eurbp02gs3bml6p01cqi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "820318220141-id144vaegnh33a9idlieomj38v6evs5h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "pacment"
+              }
+            }
+          ]
         }
       }
     },
@@ -31,7 +48,20 @@
           "package_name": "pacmet.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "820318220141-p1i0igj218u8s838nq8s92fuulqqtkpj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pacmet.app",
+            "certificate_hash": "461e3ee4f4555cdfa818e3b2636c32f31cadd414"
+          }
+        },
+        {
+          "client_id": "820318220141-qrd1v38jj480eurbp02gs3bml6p01cqi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDZ6pN3ZquqyY0ue_wpCSeVOAO5L6myLMs"
@@ -39,7 +69,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "820318220141-qrd1v38jj480eurbp02gs3bml6p01cqi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "820318220141-id144vaegnh33a9idlieomj38v6evs5h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "pacment"
+              }
+            }
+          ]
         }
       }
     }
