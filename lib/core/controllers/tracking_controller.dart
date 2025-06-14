@@ -1,124 +1,153 @@
+// tracking_controller.dart - ENHANCED VERSION
 import 'package:flutter/material.dart';
 import '../../services/aftership_service.dart';
-import '../models/tracking_models.dart';
+import '../../core/models/tracking_models.dart';
 
 class TrackingController extends ChangeNotifier {
-  TrackingInfo? _currentTracking;
-  List<TrackingInfo> _trackingHistory = [];
+  TrackingModel? _currentTracking;
+  List<TrackingModel> trackingHistory = [];
   bool _isLoading = false;
   String? _error;
+  String? _lastSearchedAwb;
 
   // Getters
-  TrackingInfo? get currentTracking => _currentTracking;
-  List<TrackingInfo> get trackingHistory => _trackingHistory;
+  TrackingModel? get currentTracking => _currentTracking;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get lastSearchedAwb => _lastSearchedAwb;
+  bool get hasData => _currentTracking != null;
 
-  // Track package
-  Future<void> trackPackage(String trackingNumber, {String? courierSlug}) async {
-    _setLoading(true);
-    _clearError();
-
-    try {
-      // Try to get existing tracking first
-      TrackingResponse response;
-      
-      try {
-        response = await AfterShipService.getTracking(
-          trackingNumber: trackingNumber,
-          slug: courierSlug,
-        );
-      } catch (e) {
-        // If tracking doesn't exist, create it
-        response = await AfterShipService.createTracking(
-          trackingNumber: trackingNumber,
-          slug: courierSlug,
-        );
-      }
-
-      _currentTracking = response.data.tracking;
-      _addToHistory(_currentTracking!);
-      
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
-    }
+  // ✅ **1. Enhanced Validasi Nomor Resi**
+  bool _isValidResi(String awb) {
+    if (awb.isEmpty) return false;
+    final cleanAwb = awb.trim();
+    
+    // Basic length and character validation
+    if (cleanAwb.length < 8 || cleanAwb.length > 25) return false;
+    
+    // Allow alphanumeric characters, dashes, and some special chars
+    return RegExp(r'^[0-9A-Za-z\-_]+$').hasMatch(cleanAwb);
   }
 
-  // Auto-detect courier and track
-  Future<void> autoTrackPackage(String trackingNumber) async {
+  // ✅ **2. Enhanced Tracking Paket with better error handling**
+  Future<void> trackPackage({required String awb, required String courierCode}) async {
     _setLoading(true);
     _clearError();
+    _lastSearchedAwb = awb.trim();
+
+    if (!_isValidResi(awb)) {
+      _setError('Nomor resi tidak valid. Pastikan format resi benar (8-25 karakter).');
+      _setLoading(false);
+      return;
+    }
 
     try {
-      // First, detect the courier
-      final couriers = await AfterShipService.detectCourier(
-        trackingNumber: trackingNumber,
+      final trackingData = await BinderByteService.trackWaybill(
+        awb: awb.trim(),
+        courierCode: courierCode.toLowerCase().replaceAll(' ', ''),
       );
 
-      if (couriers.isNotEmpty) {
-        // Use the first detected courier
-        await trackPackage(trackingNumber, courierSlug: couriers.first.slug);
-      } else {
-        // If no courier detected, try without courier slug
-        await trackPackage(trackingNumber);
-      }
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  // Refresh current tracking
-  Future<void> refreshTracking() async {
-    if (_currentTracking == null) return;
-
-    await trackPackage(
-      _currentTracking!.trackingNumber,
-      courierSlug: _currentTracking!.slug,
-    );
-  }
-
-  // Load tracking history
-  Future<void> loadTrackingHistory() async {
-    _setLoading(true);
-    _clearError();
-
-    try {
-      _trackingHistory = await AfterShipService.getAllTrackings();
-    } catch (e) {
-      _setError(e.toString());
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  // Remove tracking from history
-  Future<void> removeFromHistory(TrackingInfo tracking) async {
-    try {
-      final success = await AfterShipService.deleteTracking(
-        trackingNumber: tracking.trackingNumber,
-        slug: tracking.slug,
-      );
-
-      if (success) {
-        _trackingHistory.removeWhere((t) => t.id == tracking.id);
+      if (trackingData != null) {
+        _currentTracking = trackingData;
+        _saveTrackingHistory(trackingData);
+        _clearError(); // Clear any previous errors
         notifyListeners();
+      } else {
+        _setError('Resi tidak ditemukan atau kurir tidak sesuai. Coba pilih kurir yang berbeda.');
       }
     } catch (e) {
-      _setError(e.toString());
+      debugPrint('Tracking error: $e'); // For debugging
+      _setError(_formatError(e.toString()));
+    } finally {
+      _setLoading(false);
     }
   }
 
-  // Private methods
+  // ✅ **3. Enhanced Auto-Detect Kurir & Tracking**
+  Future<void> autoTrackPackage(String awb) async {
+    _setLoading(true);
+    _clearError();
+    _lastSearchedAwb = awb.trim();
+
+    if (!_isValidResi(awb)) {
+      _setError('Format resi tidak valid. Periksa kembali nomor resi Anda.');
+      _setLoading(false);
+      return;
+    }
+
+    try {
+      final detectedCourier = BinderByteService.detectCourier(awb.trim());
+      
+      if (detectedCourier != null) {
+        debugPrint('Detected courier: $detectedCourier for AWB: $awb'); // Debug log
+        await trackPackage(awb: awb.trim(), courierCode: detectedCourier);
+      } else {
+        _setError('Kurir tidak dapat dideteksi otomatis. Silakan pilih kurir secara manual.');
+      }
+    } catch (e) {
+      debugPrint('Auto tracking error: $e'); // For debugging
+      _setError(_formatError(e.toString()));
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // ✅ **4. Enhanced Simpan Riwayat Pencarian**
+  void _saveTrackingHistory(TrackingModel tracking) {
+    // Check if tracking already exists in history (avoid duplicates)
+    final existingIndex = trackingHistory.indexWhere(
+      (item) => item.awb == tracking.awb && item.courier == tracking.courier,
+    );
+    
+    if (existingIndex != -1) {
+      // Update existing entry
+      trackingHistory[existingIndex] = tracking;
+    } else {
+      // Add new entry at the beginning
+      trackingHistory.insert(0, tracking);
+    }
+    
+    // Keep only last 15 entries
+    if (trackingHistory.length > 15) {
+      trackingHistory.removeRange(15, trackingHistory.length);
+    }
+    
+    notifyListeners();
+  }
+
+  // ✅ **5. Hapus Tracking dari History**
+  void removeFromHistory(int index) {
+    if (index >= 0 && index < trackingHistory.length) {
+      trackingHistory.removeAt(index);
+      notifyListeners();
+    }
+  }
+
+  // ✅ **6. Clear specific tracking from history by AWB**
+  void removeTrackingByAwb(String awb) {
+    trackingHistory.removeWhere((tracking) => tracking.awb == awb);
+    notifyListeners();
+  }
+
+  // ✅ **7. Reset Data**
+  void clearCurrentTracking() {
+    _currentTracking = null;
+    _clearError();
+    notifyListeners();
+  }
+
+  void clearAllHistory() {
+    trackingHistory.clear();
+    notifyListeners();
+  }
+
+  // ✅ **8. Enhanced Helper untuk Error Handling**
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
   }
 
-  void _setError(String error) {
+  void _setError(String? error) {
     _error = error;
     notifyListeners();
   }
@@ -128,16 +157,58 @@ class TrackingController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _addToHistory(TrackingInfo tracking) {
-    // Remove if already exists
-    _trackingHistory.removeWhere((t) => t.trackingNumber == tracking.trackingNumber);
-    // Add to beginning
-    _trackingHistory.insert(0, tracking);
-    notifyListeners();
+  String _formatError(String error) {
+    // More comprehensive error formatting
+    if (error.contains('HTTP 400')) {
+      return 'Permintaan tidak valid. Periksa nomor resi dan pilihan kurir.';
+    }
+    if (error.contains('HTTP 401')) {
+      return 'Layanan sementara tidak tersedia. Coba lagi nanti.';
+    }
+    if (error.contains('HTTP 404')) {
+      return 'Resi tidak ditemukan. Pastikan nomor resi dan kurir sudah benar.';
+    }
+    if (error.contains('HTTP 429')) {
+      return 'Terlalu banyak permintaan. Tunggu sebentar dan coba lagi.';
+    }
+    if (error.contains('HTTP 500')) {
+      return 'Server sedang bermasalah. Coba lagi dalam beberapa menit.';
+    }
+    if (error.contains('SocketException') || error.contains('NetworkException')) {
+      return 'Tidak ada koneksi internet. Periksa koneksi Anda.';
+    }
+    if (error.contains('TimeoutException')) {
+      return 'Koneksi timeout. Periksa koneksi internet Anda.';
+    }
+    if (error.contains('FormatException')) {
+      return 'Data tidak valid dari server. Coba lagi nanti.';
+    }
+    
+    // Clean up generic error messages
+    String cleanError = error
+        .replaceAll('Exception: ', '')
+        .replaceAll('Error tracking waybill: ', '')
+        .replaceAll('Error: ', '');
+    
+    return cleanError.isNotEmpty ? cleanError : 'Terjadi kesalahan tidak dikenal. Coba lagi.';
   }
 
-  void clearCurrentTracking() {
-    _currentTracking = null;
-    notifyListeners();
+  // ✅ **9. Utility method to refresh current tracking**
+  Future<void> refreshCurrentTracking() async {
+    if (_currentTracking != null) {
+      await trackPackage(
+        awb: _currentTracking!.awb, 
+        courierCode: _currentTracking!.courier,
+      );
+    }
+  }
+
+  // ✅ **10. Get tracking from history**
+  TrackingModel? getTrackingFromHistory(String awb) {
+    try {
+      return trackingHistory.firstWhere((tracking) => tracking.awb == awb);
+    } catch (e) {
+      return null;
+    }
   }
 }

@@ -8,7 +8,7 @@ class AuthService {
       'email',
       'profile',
     ],
-    // Jika ada Client ID, tambahkan di sini
+    // client id
     clientId: '820318220141-hea9lono9a937c15m66a7uojku5evn67.apps.googleusercontent.com',
   );
 

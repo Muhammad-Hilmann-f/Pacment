@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/models/tracking_models.dart';
 
 class TrackingTimeline extends StatelessWidget {
-  final List<Checkpoint> checkpoints;
+  final List<WaybillHistory> checkpoints;
 
   const TrackingTimeline({
     super.key,
@@ -33,6 +33,14 @@ class TrackingTimeline extends StatelessWidget {
       );
     }
 
+    // Sort checkpoints by date (most recent first for display)
+    final sortedCheckpoints = List<WaybillHistory>.from(checkpoints);
+    sortedCheckpoints.sort((a, b) {
+      final dateA = _parseDate(a.date);
+      final dateB = _parseDate(b.date);
+      return dateB.compareTo(dateA); // Most recent first
+    });
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
@@ -48,10 +56,10 @@ class TrackingTimeline extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            ...checkpoints.asMap().entries.map((entry) {
+            ...sortedCheckpoints.asMap().entries.map((entry) {
               final index = entry.key;
               final checkpoint = entry.value;
-              final isLast = index == checkpoints.length - 1;
+              final isLast = index == sortedCheckpoints.length - 1;
               
               return TimelineItem(
                 checkpoint: checkpoint,
@@ -64,10 +72,23 @@ class TrackingTimeline extends StatelessWidget {
       ),
     );
   }
+
+  DateTime _parseDate(String dateTimeString) {
+    try {
+      // Handle various date formats that might come from the API
+      if (dateTimeString.isEmpty) return DateTime.now();
+      
+      // Try to parse the date string
+      // You might need to adjust this based on the actual format from RajaOngkir
+      return DateTime.tryParse(dateTimeString) ?? DateTime.now();
+    } catch (e) {
+      return DateTime.now();
+    }
+  }
 }
 
 class TimelineItem extends StatelessWidget {
-  final Checkpoint checkpoint;
+  final WaybillHistory checkpoint;
   final bool isLast;
   final bool isFirst;
 
@@ -109,9 +130,9 @@ class TimelineItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  checkpoint.message.isNotEmpty 
-                      ? checkpoint.message 
-                      : checkpoint.subtagMessage,
+                  checkpoint.desc.isNotEmpty 
+                      ? checkpoint.desc 
+                      : 'Package update',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: isFirst ? FontWeight.bold : FontWeight.normal,
@@ -119,9 +140,9 @@ class TimelineItem extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                if (checkpoint.fullLocation.isNotEmpty)
+                if (checkpoint.location.isNotEmpty)
                   Text(
-                    checkpoint.fullLocation,
+                    checkpoint.location,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,
@@ -129,7 +150,7 @@ class TimelineItem extends StatelessWidget {
                   ),
                 const SizedBox(height: 4),
                 Text(
-                  _formatDate(checkpoint.checkpointTime),
+                  _formatDateTime(checkpoint.date),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade500,
@@ -144,7 +165,19 @@ class TimelineItem extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  String _formatDateTime(String dateTimeString) {
+    if (dateTimeString.isEmpty) return 'Unknown time';
+    
+    try {
+      final date = DateTime.tryParse(dateTimeString);
+      if (date != null) {
+        return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      }
+      
+      // If parsing fails, return the original string
+      return dateTimeString;
+    } catch (e) {
+      return dateTimeString;
+    }
   }
 }

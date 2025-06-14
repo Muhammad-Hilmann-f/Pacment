@@ -5,7 +5,7 @@ import '../qrCode/qr_scan_screen.dart';
 import '../navigations/sidebar.dart';
 import 'widgets/dashboard_app_bar.dart';
 import 'widgets/dashboard_content.dart';
-import 'widgets/recent_trackings_list.dart';
+// import 'widgets/recent_trackings_list.dart';
 import 'dialog/profile_dialog.dart';
 import '../../widgets/backgrounds/gradient_background.dart';
 import '../tracking/tracking_result_screen.dart';
@@ -22,7 +22,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TrackingController>().loadTrackingHistory();
     });
   }
 
@@ -49,9 +48,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         onTrack: _handleTrackPackage, // Add this callback
                       ),
                       const SizedBox(height: 20),
-                      const Expanded(
-                        child: RecentTrackingsList(),
-                      ),
+                      // const Expanded(
+                      //   // child: RecentTrackingsList(),
+                      // ),
                     ],
                   ),
                 ),
@@ -79,14 +78,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await controller.autoTrackPackage(trackingNumber);
     
     if (!mounted) return;
-    
-    if (controller.currentTracking != null) {
+
+ if (controller.hasData) {
       // Auto-redirect to results
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => TrackingResultScreen(
-            trackingInfo: controller.currentTracking!,
+ trackingInfo: controller.currentTracking!,
           ),
         ),
       );

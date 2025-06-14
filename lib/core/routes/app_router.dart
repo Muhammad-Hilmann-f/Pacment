@@ -4,6 +4,7 @@ import '../../views/auth/register_page.dart';
 import '../../views/auth/login_page.dart';
 import '../../views/dashboard/dashboard_screen.dart';
 import '../../views/tracking/tracking_result_screen.dart';
+import '../../views/analytics/analytics_screen.dart';
 import '../../core/models/tracking_models.dart'; 
 import 'app_routes.dart';
 
@@ -18,9 +19,11 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const LoginPage());
       case AppRoutes.dashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
+      case AppRoutes.analytics:
+        return MaterialPageRoute(builder: (_) => const AnalyticsScreen());
       case AppRoutes.trackingResult:
         // Pastikan arguments adalah TrackingInfo
-        final trackingInfo = settings.arguments as TrackingInfo?;
+        final trackingInfo = settings.arguments as TrackingModel?;
         if (trackingInfo == null) {
           return _errorRoute('Data tracking tidak valid');
         }

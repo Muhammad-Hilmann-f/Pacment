@@ -27,7 +27,7 @@ class DashboardContent extends StatelessWidget {
             const SizedBox(height: 24),
             TrackingInputSection(
               onQRScan: onQRScan,
-              onTrack: onTrack,
+              // onTrack: onTrack,
             ),
             const SizedBox(height: 16),
             const MotorcycleImageWidget(),

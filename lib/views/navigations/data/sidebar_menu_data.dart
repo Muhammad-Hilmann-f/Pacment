@@ -16,24 +16,6 @@ class SidebarMenuData {
         route: '/analytics',
         isActive: currentRoute == '/analytics',
       ),
-      SidebarMenuItem(
-        title: 'Account',
-        icon: Icons.person_outline,
-        route: '/account',
-        isActive: currentRoute == '/account',
-      ),
-      SidebarMenuItem(
-        title: 'Setting',
-        icon: Icons.settings_outlined,
-        route: '/settings',
-        isActive: currentRoute == '/settings',
-      ),
-      SidebarMenuItem(
-        title: 'Help & Support',
-        icon: Icons.help_outline,
-        route: '/help',
-        isActive: currentRoute == '/help',
-      ),
     ];
   }
 }
