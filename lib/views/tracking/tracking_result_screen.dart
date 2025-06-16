@@ -6,6 +6,7 @@ import '../../core/controllers/tracking_controller.dart';
 import 'widgets/tracking_header.dart';
 import 'widgets/tracking_status_card.dart';
 import 'widgets/tracking_timeline.dart';
+import '../../core/routes/app_routes.dart';
 
 class TrackingResultScreen extends StatelessWidget {
   final TrackingModel trackingInfo;
@@ -41,13 +42,24 @@ class TrackingResultScreen extends StatelessWidget {
                         TrackingTimeline(checkpoints: trackingResult.history),
                       ],
                     ],
+                    
                   ),
                 ),
-              ),
+              ),ElevatedButton(
+  onPressed: () {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.maps, // 🔥 Gunakan routing
+      arguments: trackingInfo, // 🔥 Kirim data tracking penuh
+    );
+  },
+  child: const Text("Lihat Lokasi Paket"),
+),
             ],
           ),
         ),
       ),
     );
+    
   }
 }

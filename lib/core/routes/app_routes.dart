@@ -5,5 +5,6 @@ class AppRoutes {
   static const String dashboard= '/dashboard';
   static const String trackingResult= '/tracking-result';
   static const String analytics = '/analytics';
+  static const String maps = '/maps';
   // Tambahkan route lain sesuai kebutuhan
 }
