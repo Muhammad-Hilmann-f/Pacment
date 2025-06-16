@@ -5,13 +5,14 @@ import '../../core/models/tracking_models.dart';
 
 class TrackingController extends ChangeNotifier {
   TrackingModel? _currentTracking;
-  List<TrackingModel> trackingHistory = [];
+  List<TrackingModel> _trackingHistory = []; // Pastikan ini ada dan digunakan
   bool _isLoading = false;
   String? _error;
   String? _lastSearchedAwb;
 
-  // Getters
+// Getters
   TrackingModel? get currentTracking => _currentTracking;
+  List<TrackingModel> get trackingHistory => _trackingHistory; // Ini getter yang akan diakses AnalyticsScreen
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get lastSearchedAwb => _lastSearchedAwb;
@@ -93,26 +94,26 @@ class TrackingController extends ChangeNotifier {
   }
 
   // ✅ **4. Enhanced Simpan Riwayat Pencarian**
-  void _saveTrackingHistory(TrackingModel tracking) {
+void _saveTrackingHistory(TrackingModel tracking) {
     // Check if tracking already exists in history (avoid duplicates)
-    final existingIndex = trackingHistory.indexWhere(
+    final existingIndex = _trackingHistory.indexWhere( // Menggunakan _trackingHistory
       (item) => item.awb == tracking.awb && item.courier == tracking.courier,
     );
-    
     if (existingIndex != -1) {
       // Update existing entry
-      trackingHistory[existingIndex] = tracking;
+      _trackingHistory[existingIndex] = tracking; // Menggunakan _trackingHistory
     } else {
       // Add new entry at the beginning
-      trackingHistory.insert(0, tracking);
+      _trackingHistory.insert(0, tracking); // Menggunakan _trackingHistory
     }
     
     // Keep only last 15 entries
-    if (trackingHistory.length > 15) {
-      trackingHistory.removeRange(15, trackingHistory.length);
+    if (_trackingHistory.length > 15) { // Menggunakan _trackingHistory
+      _trackingHistory.removeRange(15, _trackingHistory.length); // Menggunakan _trackingHistory
     }
     
     notifyListeners();
+  
   }
 
   // ✅ **5. Hapus Tracking dari History**

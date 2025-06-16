@@ -22,7 +22,7 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
       case AppRoutes.analytics:
       return MaterialPageRoute(
-        builder: (_) => AnalyticsScreen(trackingHistory: []),
+        builder: (_) => AnalyticsScreen()
       );
 
       case AppRoutes.trackingResult:

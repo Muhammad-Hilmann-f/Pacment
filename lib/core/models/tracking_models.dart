@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:intl/intl.dart';
+
 class TrackingModel {
   final String awb;
   final String courier;
@@ -7,7 +8,7 @@ class TrackingModel {
   final String date;
   final WaybillDetail detail;
   final List<WaybillHistory> history;
-  final CourierAnalysis? analysis; // New field for courier analysis
+  final CourierAnalysis? analysis;
 
   TrackingModel({
     required this.awb,
@@ -20,13 +21,25 @@ class TrackingModel {
   });
 
   factory TrackingModel.fromJson(Map<String, dynamic> json) {
-    print('Full API Response: $json'); // Debug log
-    
+    print('📡 TrackingModel.fromJson: Starting...');
+    print('Full API Response: $json');
     final history = (json['data']['history'] as List<dynamic>?)
         ?.map((item) => WaybillHistory.fromJson(item))
         .toList() ?? [];
     
     final courier = json['data']['summary']['courier'] ?? '';
+    
+    print('📦 TrackingModel: History count=${history.length}, Courier=$courier');
+    
+    CourierAnalysis? analysis;
+    try {
+      // 🔥 Pastikan CourierAnalysis.fromTrackingData selalu mengembalikan objek non-null
+      analysis = CourierAnalysis.fromTrackingData(courier, history);
+      print('✅ TrackingModel: Analysis created successfully');
+    } catch (e) {
+      print('❌ TrackingModel: Analysis creation failed: $e');
+      analysis = null; // Jika ada error parah, set ke null
+    }
     
     return TrackingModel(
       awb: json['data']['summary']['awb'] ?? '',
@@ -35,7 +48,7 @@ class TrackingModel {
       date: json['data']['summary']['date'] ?? '',
       detail: WaybillDetail.fromJson(json['data']['detail'] ?? {}),
       history: history,
-      analysis: CourierAnalysis.fromTrackingData(courier, history),
+      analysis: analysis,
     );
   }
 
@@ -219,7 +232,7 @@ class WaybillHistory {
   final String date;
   final String desc;
   final String location;
-  final DateTime? parsedDate; // New field for easier date operations
+  final DateTime? parsedDate;
 
   WaybillHistory({
     required this.date,
@@ -229,9 +242,15 @@ class WaybillHistory {
   });
 
   factory WaybillHistory.fromJson(Map<String, dynamic> json) {
-    String dateStr = json['date'] ?? '';
-    DateTime? parsed = _parseDate(dateStr);
-    
+    String rawDate = (json['date'] ?? '').toString();
+    String dateStr = rawDate.trim().replaceAll(RegExp(r'\s+'), ' ');
+
+    DateTime? parsed = parseDate(dateStr);
+
+    print('📦 DESC: ${json['desc']}');
+    print('🕒 RAW DATE: "$rawDate"');
+    print('🕒 NORMALIZED: "$dateStr"');
+    print('✅ PARSED: $parsed');
     return WaybillHistory(
       date: dateStr,
       desc: json['desc'] ?? '',
@@ -239,33 +258,41 @@ class WaybillHistory {
       parsedDate: parsed,
     );
   }
-  
-  static DateTime? _parseDate(String dateStr) {
+
+  static DateTime? parseDate(String dateStr) {
     if (dateStr.isEmpty) return null;
-    
     try {
-      // Common Indonesian date formats
       List<String> formats = [
+        'yyyy-MM-dd HH:mm',      // ✅ Format API utama 
+        'yyyy-MM-dd HH:mm:ss',   // ✅ Backup dengan detik 
+        'dd-MM-yyyy HH:mm',      // ✅ Format alternatif 
         'dd-MM-yyyy HH:mm:ss',
-        'yyyy-MM-dd HH:mm:ss',
         'dd/MM/yyyy HH:mm:ss',
-        'dd-MM-yyyy',
+        'dd/MM/yyyy HH:mm',
         'yyyy-MM-dd',
+        'dd-MM-yyyy',
         'dd/MM/yyyy',
       ];
-      
       for (String format in formats) {
         try {
-          return DateFormat(format).parse(dateStr);
+          DateTime parsed = DateFormat(format).parseStrict(dateStr);
+          print('✅ SUCCESS: "$dateStr" parsed with format "$format" -> $parsed'); // 
+          return parsed;
         } catch (e) {
-          continue;
+          print('❌ FAILED: "$dateStr" with format "$format" -> $e'); // 
         }
       }
-      
-      // Try parsing with DateTime.parse as fallback
-      return DateTime.parse(dateStr);
+
+      DateTime? fallback = DateTime.tryParse(dateStr);
+      if (fallback != null) {
+        print('✅ FALLBACK: "$dateStr" parsed with DateTime.tryParse -> $fallback'); // 
+        return fallback;
+      }
+
+      print('⚠️ TOTAL FAILURE: Cannot parse "$dateStr"'); // 
+      return null;
     } catch (e) {
-      print('Failed to parse date: $dateStr');
+      print('⚠️ EXCEPTION in parseDate: $dateStr -> $e'); // 
       return null;
     }
   }
@@ -299,40 +326,58 @@ class CourierAnalysis {
   });
 
   factory CourierAnalysis.fromTrackingData(String courier, List<WaybillHistory> history) {
+    print('🔍 ANALYSIS START: Courier="$courier", History count=${history.length}'); // 
     if (history.isEmpty) {
-      return CourierAnalysis._empty(courier);
+      print('❌ ANALYSIS: History is empty'); // 
+      return CourierAnalysis._empty(courier); // 
     }
 
+    // Pastikan parsedDate diisi dengan benar. Log Anda menunjukkan ini sudah OK.
+    List<WaybillHistory> historyWithDates = history.where((h) => h.parsedDate != null).toList();
+    
+    print('📊 ANALYSIS: Valid dates found: ${historyWithDates.length}/${history.length}'); // 
+
+    // 🔥 PERUBAHAN KRITIS DI SINI:
+    // Jika hanya ada 1 tanggal valid, kita tetap bisa membuat analisis sederhana (1 hari)
+    // daripada langsung mengembalikan _empty.
+    if (historyWithDates.isEmpty) {
+      print('❌ ANALYSIS: No valid dates found at all. Returning empty analysis.');
+      return CourierAnalysis._empty(courier);
+    }
+    
     // Sort history by date (oldest first)
-    List<WaybillHistory> sortedHistory = history.where((h) => h.parsedDate != null).toList();
-    sortedHistory.sort((a, b) => a.parsedDate!.compareTo(b.parsedDate!));
+    historyWithDates.sort((a, b) => a.parsedDate!.compareTo(b.parsedDate!)); // 
 
-    if (sortedHistory.length < 2) {
-      return CourierAnalysis._empty(courier);
+    int calculatedTotalDays;
+    if (historyWithDates.length == 1) {
+      calculatedTotalDays = 1; // Jika hanya 1 tanggal, asumsikan 1 hari pengiriman.
+      print('⚠️ ANALYSIS: Only 1 valid date. Assuming 1 day delivery.');
+    } else {
+      DateTime startDate = historyWithDates.first.parsedDate!; // 
+      DateTime endDate = historyWithDates.last.parsedDate!; // 
+      calculatedTotalDays = endDate.difference(startDate).inDays; // 
+      if (calculatedTotalDays == 0) calculatedTotalDays = 1; // Minimum 1 day 
     }
 
-    // Calculate total days
-    DateTime startDate = sortedHistory.first.parsedDate!;
-    DateTime endDate = sortedHistory.last.parsedDate!;
-    int totalDays = endDate.difference(startDate).inDays;
-    if (totalDays == 0) totalDays = 1; // Minimum 1 day
+    print('📅 ANALYSIS: Start=${historyWithDates.first.parsedDate}, End=${historyWithDates.last.parsedDate}, Days=$calculatedTotalDays'); // 
 
     // Extract milestones
-    List<String> milestones = sortedHistory.map((h) => 
-        '${h.date}: ${h.desc} (${h.location})').toList();
-
+    List<String> milestones = historyWithDates.map((h) => 
+        '${h.date}: ${h.desc} (${h.location})').toList(); // 
+    
     // Determine performance level
-    CourierPerformanceLevel performance = _determinePerformance(totalDays);
+    CourierPerformanceLevel performance = _determinePerformance(calculatedTotalDays); // 
 
     // Generate recommendation
-    String recommendation = _generateRecommendation(courier, performance, totalDays);
+    String recommendation = _generateRecommendation(courier, performance, calculatedTotalDays); // 
+    
+    // Calculate average speed
+    double avgSpeed = _calculateAverageSpeed(courier, calculatedTotalDays); // 
 
-    // Calculate average speed (this would need distance data for accuracy)
-    double avgSpeed = _calculateAverageSpeed(courier, totalDays);
-
+    print('✅ ANALYSIS SUCCESS: $courier -> $calculatedTotalDays days, $performance'); // 
     return CourierAnalysis(
       courierName: courier,
-      totalDays: totalDays,
+      totalDays: calculatedTotalDays,
       averageSpeedKmPerDay: avgSpeed,
       performanceLevel: performance,
       milestones: milestones,
@@ -340,7 +385,7 @@ class CourierAnalysis {
     );
   }
 
-  factory CourierAnalysis._empty(String courier) {
+  factory CourierAnalysis._empty(String courier) { // 
     return CourierAnalysis(
       courierName: courier,
       totalDays: 0,
@@ -350,6 +395,7 @@ class CourierAnalysis {
       recommendation: 'Data tracking tidak cukup untuk analisis',
     );
   }
+
 
   static CourierPerformanceLevel _determinePerformance(int days) {
     if (days <= 2) return CourierPerformanceLevel.excellent;
@@ -444,39 +490,15 @@ class CourierAnalysis {
 // Utility class untuk analisis multiple couriers
 class CourierComparison {
   static List<CourierAnalysis> rankCouriers(List<TrackingModel> trackings) {
-    List<CourierAnalysis> analyses = trackings
+    return trackings
         .where((t) => t.analysis != null)
         .map((t) => t.analysis!)
-        .toList();
-
-    // Sort by performance (fastest first)
-    analyses.sort((a, b) {
-      int aScore = _getPerformanceScore(a.performanceLevel);
-      int bScore = _getPerformanceScore(b.performanceLevel);
-      
-      if (aScore != bScore) {
-        return bScore.compareTo(aScore); // Higher score = better performance
-      }
-      
-      return a.totalDays.compareTo(b.totalDays); // Lower days = better
-    });
-
-    return analyses;
-  }
-
-  static int _getPerformanceScore(CourierPerformanceLevel level) {
-    switch (level) {
-      case CourierPerformanceLevel.excellent: return 5;
-      case CourierPerformanceLevel.good: return 4;
-      case CourierPerformanceLevel.average: return 3;
-      case CourierPerformanceLevel.slow: return 2;
-      case CourierPerformanceLevel.verySlow: return 1;
-      default: return 0;
-    }
+        .toList()
+      ..sort((a, b) => a.totalDays.compareTo(b.totalDays));
   }
 
   static Map<String, dynamic> generateReport(List<TrackingModel> trackings) {
-    List<CourierAnalysis> analyses = trackings
+    final analyses = trackings
         .where((t) => t.analysis != null)
         .map((t) => t.analysis!)
         .toList();
@@ -491,54 +513,31 @@ class CourierComparison {
       };
     }
 
-    List<CourierAnalysis> ranked = rankCouriers(trackings);
-    
-    double avgDays = analyses.map((a) => a.totalDays).reduce((a, b) => a + b) / analyses.length;
+    final ranked = rankCouriers(trackings);
+    final avgDays = analyses
+            .map((a) => a.totalDays)
+            .reduce((a, b) => a + b) /
+        analyses.length;
 
     return {
-      'summary': 'Analisis ${analyses.length} pengiriman dari ${Set.from(analyses.map((a) => a.courierName)).length} courier berbeda',
-      'fastest_courier': ranked.isNotEmpty ? ranked.first : null,
-      'slowest_courier': ranked.isNotEmpty ? ranked.last : null,
+      'summary':
+          'Analisis ${analyses.length} pengiriman dari ${Set.from(analyses.map((a) => a.courierName)).length} courier',
+      'fastest_courier': ranked.first,
+      'slowest_courier': ranked.last,
       'average_days': avgDays.toStringAsFixed(1),
-      'recommendations': _generateGeneralRecommendations(ranked),
-      'courier_ranking': ranked,
+      'recommendations': _generateRecs(ranked),
     };
   }
 
-  static List<String> _generateGeneralRecommendations(List<CourierAnalysis> ranked) {
-    if (ranked.isEmpty) return ['Tidak ada data untuk rekomendasi'];
+  static List<String> _generateRecs(List<CourierAnalysis> list) {
+    if (list.isEmpty) return ['Tidak ada data cukup'];
 
-    List<String> recommendations = [];
-    
-    if (ranked.isNotEmpty) {
-      CourierAnalysis fastest = ranked.first;
-      recommendations.add('🏆 Courier tercepat: ${fastest.courierName} (${fastest.totalDays} hari)');
-    }
+    final fastest = list.first;
+    final slowest = list.last;
 
-    if (ranked.length > 1) {
-      CourierAnalysis slowest = ranked.last;
-      recommendations.add('🐌 Courier terlambat: ${slowest.courierName} (${slowest.totalDays} hari)');
-    }
-
-    // Analysis by performance level
-    Map<CourierPerformanceLevel, int> levelCounts = {};
-    for (var analysis in ranked) {
-      levelCounts[analysis.performanceLevel] = (levelCounts[analysis.performanceLevel] ?? 0) + 1;
-    }
-
-    int excellentCount = levelCounts[CourierPerformanceLevel.excellent] ?? 0;
-    int totalCount = ranked.length;
-
-    if (excellentCount > totalCount * 0.5) {
-      recommendations.add('✅ ${((excellentCount/totalCount)*100).toInt()}% courier menunjukkan performa excellent');
-    } else if (excellentCount == 0) {
-      recommendations.add('⚠️ Tidak ada courier yang mencapai level excellent, pertimbangkan evaluasi mitra');
-    }
-
-    return recommendations;
+    return [
+      '🏆 Tercepat: ${fastest.courierName} (${fastest.totalDays} hari)',
+      '🐌 Terlambat: ${slowest.courierName} (${slowest.totalDays} hari)',
+    ];
   }
 }
-
-// Don't forget to import required packages at the top of your file:
-// import 'dart:math' as math;
-// import 'package:intl/intl.dart';

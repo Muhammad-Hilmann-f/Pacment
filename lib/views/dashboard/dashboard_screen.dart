@@ -73,19 +73,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<void> _handleTrackPackage(String trackingNumber) async {
+Future<void> _handleTrackPackage(String trackingNumber) async {
     final controller = context.read<TrackingController>();
-    await controller.autoTrackPackage(trackingNumber);
-    
+    await controller.autoTrackPackage(trackingNumber); // Ini sudah memanggil _saveTrackingHistory internal
     if (!mounted) return;
 
- if (controller.hasData) {
+    if (controller.hasData) {
       // Auto-redirect to results
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => TrackingResultScreen(
- trackingInfo: controller.currentTracking!,
+            trackingInfo: controller.currentTracking!,
           ),
         ),
       );
@@ -98,7 +97,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
   }
-
   void _showProfileDialog(BuildContext context) {
     showDialog(
       context: context,
