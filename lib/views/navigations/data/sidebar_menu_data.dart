@@ -16,6 +16,12 @@ class SidebarMenuData {
         route: '/analytics',
         isActive: currentRoute == '/analytics',
       ),
+      SidebarMenuItem(
+        title: 'History',
+        icon: Icons.history_outlined,
+        route: '/history',
+        isActive: currentRoute == '/history',
+      ),
     ];
   }
 }

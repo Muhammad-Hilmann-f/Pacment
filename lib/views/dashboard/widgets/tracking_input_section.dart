@@ -57,7 +57,7 @@ class _TrackingInputSectionState extends State<TrackingInputSection> {
             isExpanded: true,
             underline: const SizedBox(), // Hilangkan underline default
             items: [
-              const DropdownMenuItem(value: null, child: Text("Auto Detect")),
+              const DropdownMenuItem(value: null, child: Text("Pilik Kurir")),
               ...['jne', 'tiki', 'sicepat', 'pos', 'jnt', 'wahana', 'ninja', 'lion'].map((courier) {
                 return DropdownMenuItem(
                   value: courier,

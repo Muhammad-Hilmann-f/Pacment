@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pacment/views/dashboard/widgets/recent_trackings_list.dart';
 import '../../views/onboarding/onboarding_screen.dart';
 import '../../views/auth/register_page.dart';
 import '../../views/auth/login_page.dart';
@@ -7,6 +8,7 @@ import '../../views/tracking/tracking_result_screen.dart';
 import '../../views/analytics/analytics_screen.dart';
 import '../../core/models/tracking_models.dart';
 import '../../views/maps/tracking_maps_result.dart';
+import '../../views/tracking/widgets/tracking_history.dart';
 import 'app_routes.dart';
 
 class AppRouter {
@@ -20,6 +22,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const LoginPage());
       case AppRoutes.dashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
+      case AppRoutes.history:
+        return MaterialPageRoute(builder: (_) => const TrackingHistoryScreen());
       case AppRoutes.analytics:
       return MaterialPageRoute(
         builder: (_) => AnalyticsScreen()
