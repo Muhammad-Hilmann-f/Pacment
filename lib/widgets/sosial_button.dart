@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 class SosialButton extends StatelessWidget {
-  final Function()? onFacebookPressed;
   final Function()? onGooglePressed;
   
   const SosialButton({
     super.key,
-    this.onFacebookPressed,
     this.onGooglePressed,
   });
 
@@ -17,20 +15,6 @@ class SosialButton extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Facebook login button
-            Container(
-              width: 60,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.white10,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.facebook, color: Colors.white),
-                onPressed: onFacebookPressed,
-              ),
-            ),
-            const SizedBox(width: 16),
             // Google login button
             Container(
               width: 60,

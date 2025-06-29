@@ -9,7 +9,7 @@ class TrackingController extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String? _lastSearchedAwb;
-
+  
 // Getters
   TrackingModel? get currentTracking => _currentTracking;
   List<TrackingModel> get trackingHistory => _trackingHistory; // Ini getter yang akan diakses AnalyticsScreen
@@ -17,6 +17,7 @@ class TrackingController extends ChangeNotifier {
   String? get error => _error;
   String? get lastSearchedAwb => _lastSearchedAwb;
   bool get hasData => _currentTracking != null;
+
 
   // ✅ **1. Enhanced Validasi Nomor Resi**
   bool _isValidResi(String awb) {
@@ -30,6 +31,10 @@ class TrackingController extends ChangeNotifier {
     return RegExp(r'^[0-9A-Za-z\-_]+$').hasMatch(cleanAwb);
   }
 
+  void setCurrentTracking(TrackingModel tracking) {
+  _currentTracking = tracking;
+  notifyListeners();
+  }
   // ✅ **2. Enhanced Tracking Paket with better error handling**
   Future<void> trackPackage({required String awb, required String courierCode}) async {
     _setLoading(true);
@@ -204,11 +209,12 @@ void _saveTrackingHistory(TrackingModel tracking) {
     }
   }
 
-  // ✅ **10. Get tracking from history**
-  TrackingModel? getTrackingFromHistory(String awb) {
+TrackingModel? getTrackingFromHistory(String awb) {
     try {
-      return trackingHistory.firstWhere((tracking) => tracking.awb == awb);
-    } catch (e) {
+      return _trackingHistory.firstWhere(
+        (tracking) => tracking.awb == awb.trim(),
+      );
+    } catch (_) {
       return null;
     }
   }

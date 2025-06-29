@@ -151,6 +151,7 @@ class WaybillDetail {
       'SUBANG': {'lat': -6.5628, 'lng': 107.7595},
       'CIREBON': {'lat': -6.7063, 'lng': 108.5571},
       'KARAWANG': {'lat': -6.3015, 'lng': 107.3089},
+      'SUMEDANG': {'lat': -6.8376, 'lng': 107.9180},
       
       // DKI Jakarta
       'JAKARTA': {'lat': -6.2088, 'lng': 106.8456},
@@ -223,8 +224,8 @@ class WaybillDetail {
     }
     
     // Default ke Bandung
-    print('City not found, using default Bandung coordinates');
-    return {'lat': -6.9175, 'lng': 107.6191};
+    print('City not found, using default Sumedang coordinates');
+    return {'lat': -6.8376, 'lng': 107.9180};
   }
 }
 

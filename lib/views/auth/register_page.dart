@@ -58,6 +58,36 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  // <--- TAMBAHKAN METHOD INI UNTUK GOOGLE SIGN-IN
+  void _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      User? user = await _authService.signInWithGoogle(); // Panggil method Google Sign-In
+      if (user != null) {
+        print('Google Sign-In successful: ${user.uid}');
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        print('Google Sign-In cancelled or failed without explicit error.');
+        _showErrorSnackBar('Google Sign-In cancelled or failed.'); // Pengguna membatalkan
+      }
+    } catch (e) {
+      print('Google Sign-In error: $e');
+      _showErrorSnackBar(e.toString()); // Menampilkan error dari proses Google Sign-In
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // Helper untuk menampilkan SnackBar
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,12 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
               
               // Social Register Options
               SosialButton(
-                onFacebookPressed: () {
-                  // Handle Facebook login
-                },
-                onGooglePressed: () {
-                  // Handle Google login
-                },
+                onGooglePressed: _handleGoogleSignIn, // <--- PANGGIL METHOD INI
               ),
               //auth form 
               AuthForm(

@@ -123,12 +123,10 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 24),
               
               // Social Login Options
-              SosialButton(
-                onFacebookPressed: () {
-                  _showErrorSnackBar('Facebook login not implemented yet.');
-                },
-                onGooglePressed: _handleGoogleSignIn, // <--- PANGGIL METHOD INI
-              ),
+SosialButton(
+  onGooglePressed: _handleGoogleSignIn,
+),
+
               
               // Auth Form
               AuthForm(
