@@ -13,38 +13,51 @@ class AuthService {
   );
 
   // Register
-  Future<User?> registerWithEmail(String email, String password) async {
-    try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return result.user;
-    } on FirebaseAuthException catch (e) {
-      print('Register error: ${e.message}');
-      throw Exception(e.message);
-    } catch (e) {
-      print('Register error: $e');
-      throw Exception('An unknown error occurred during registration.');
-    }
+// Register
+Future<User?> registerWithEmail(String email, String password) async {
+  try {
+    UserCredential result = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // 🟢 Kirim email verifikasi
+    await result.user?.sendEmailVerification();
+
+    print('✅ Registration successful, verification email sent to $email');
+    return result.user;
+  } on FirebaseAuthException catch (e) {
+    print('Register error: ${e.message}');
+    throw Exception(e.message);
+  } catch (e) {
+    print('Register error: $e');
+    throw Exception('An unknown error occurred during registration.');
   }
+}
+
 
   // Login
-  Future<User?> loginWithEmail(String email, String password) async {
-    try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return result.user;
-    } on FirebaseAuthException catch (e) {
-      print('Login error: ${e.message}');
-      throw Exception(e.message);
-    } catch (e) {
-      print('Login error: $e');
-      throw Exception('An unknown error occurred during login.');
+Future<User?> loginWithEmail(String email, String password) async {
+  try {
+    UserCredential result = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    if (result.user != null && !result.user!.emailVerified) {
+      await _auth.signOut(); // Langsung logout lagi
+      throw Exception('Email Anda belum diverifikasi. Periksa inbox Anda.');
     }
+
+    return result.user;
+  } on FirebaseAuthException catch (e) {
+    print('Login error: ${e.message}');
+    throw Exception(e.message);
+  } catch (e) {
+    print('Login error: $e');
+    throw Exception('An unknown error occurred during login.');
   }
+}
 
   // Google Sign-In dengan error handling yang lebih baik
   Future<User?> signInWithGoogle() async {

@@ -81,9 +81,14 @@ class TrackingHistoryScreen extends StatelessWidget {
                     ),
                     isThreeLine: true,
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => controller.removeFromHistory(i),
-                    ),
+               icon: const Icon(Icons.delete),
+               onPressed: () async {
+               final awb = item.awb; // Ambil resi yang mau dihapus
+                controller.removeFromHistory(i); // Hapus lokal
+                await controller.deleteTrackingFromFirestore(awb); // Hapus Firestore
+              },
+              ),
+
                     onTap: () {
                       // Buka halaman detail tracking dengan argumen item
                       Navigator.pushNamed(context, '/analytics', arguments: item);

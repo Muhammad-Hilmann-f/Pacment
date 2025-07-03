@@ -29,35 +29,48 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _handleSubmit() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+void _handleSubmit() async {
+  if (_formKey.currentState!.validate()) {
+    setState(() => _isLoading = true);
 
-      // Ambil email dan password dari controller
-      String email = _emailController.text.trim();
-      String password = _passwordController.text.trim();
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
 
-      // Registrasi pengguna menggunakan AuthService
+    try {
+      // ✅ FIXED: Use registerWithEmail instead of loginWithEmail
       User? user = await _authService.registerWithEmail(email, password);
 
       if (user != null) {
-        print('Registrasi berhasil: ${user.uid}');
+        // ✅ Registration successful, show success message
+        print('Registration successful: ${user.uid}');
+        _showSuccessSnackBar('Registration successful! Please check your email for verification.');
+        
+        // Navigate back to login page instead of dashboard
+        // since email needs to be verified first
         Navigator.pushReplacementNamed(context, '/login');
       } else {
-        print('Registrasi gagal');
-        // Show error message to user
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registration failed. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        // Fallback if registerWithEmail returns null without error
+        _showErrorSnackBar('Registration failed. Please try again.');
       }
-
+    } catch (e) {
+      // ❌ Handle and display error to user
+      _showErrorSnackBar(e.toString());
+    } finally {
       setState(() => _isLoading = false);
     }
   }
+}
 
+// Add this helper method for success messages
+void _showSuccessSnackBar(String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+      duration: const Duration(seconds: 4),
+    ),
+  );
+}
   // <--- TAMBAHKAN METHOD INI UNTUK GOOGLE SIGN-IN
   void _handleGoogleSignIn() async {
     setState(() => _isLoading = true);

@@ -2,6 +2,9 @@
 import 'package:flutter/material.dart';
 import '../../services/aftership_service.dart';
 import '../../core/models/tracking_models.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class TrackingController extends ChangeNotifier {
   TrackingModel? _currentTracking;
@@ -35,6 +38,46 @@ class TrackingController extends ChangeNotifier {
   _currentTracking = tracking;
   notifyListeners();
   }
+
+  Future<void> _saveTrackingToFirestore(TrackingModel tracking) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    debugPrint('🚫 User not logged in, skip saving tracking');
+    return;
+  }
+
+  try {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('trackings')
+        .add({
+          'resi': tracking.awb,
+          'kurir': tracking.courier,
+          'status': tracking.status,
+          'date': tracking.date,
+          'detail': {
+            'origin': tracking.detail.origin,
+            'destination': tracking.detail.destination,
+            'shipper': tracking.detail.shipper,
+            'receiver': tracking.detail.receiver,
+            'latitude': tracking.detail.latitude,
+            'longitude': tracking.detail.longitude,
+            'distance': tracking.detail.distance,
+          },
+          'history': tracking.history.map((h) => {
+            'date': h.date,
+            'desc': h.desc,
+            'location': h.location,
+          }).toList(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+    debugPrint('✅ Tracking saved to Firestore');
+  } catch (e) {
+    debugPrint('❌ Failed to save tracking: $e');
+  }
+}
+
   // ✅ **2. Enhanced Tracking Paket with better error handling**
   Future<void> trackPackage({required String awb, required String courierCode}) async {
     _setLoading(true);
@@ -47,12 +90,20 @@ class TrackingController extends ChangeNotifier {
       return;
     }
 
+
     try {
       final trackingData = await BinderByteService.trackWaybill(
         awb: awb.trim(),
         courierCode: courierCode.toLowerCase().replaceAll(' ', ''),
       );
 
+      if (trackingData != null) {
+  _currentTracking = trackingData;
+  _saveTrackingHistory(trackingData);
+  await _saveTrackingToFirestore(trackingData); // 🟢 Ini yang bikin auto save!
+  _clearError();
+  notifyListeners();
+}
       if (trackingData != null) {
         _currentTracking = trackingData;
         _saveTrackingHistory(trackingData);
@@ -120,6 +171,31 @@ void _saveTrackingHistory(TrackingModel tracking) {
     notifyListeners();
   
   }
+
+  Future<void> deleteTrackingFromFirestore(String awb) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    debugPrint('🚫 User not logged in, skip deleting tracking');
+    return;
+  }
+
+  try {
+    final query = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('trackings')
+        .where('resi', isEqualTo: awb)
+        .get();
+
+    for (var doc in query.docs) {
+      await doc.reference.delete();
+      debugPrint('🗑️ Tracking deleted from Firestore: ${doc.id}');
+    }
+  } catch (e) {
+    debugPrint('❌ Failed to delete tracking from Firestore: $e');
+  }
+}
+
 
   // ✅ **5. Hapus Tracking dari History**
   void removeFromHistory(int index) {
