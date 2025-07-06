@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../widgets/sosial_button.dart';
+// import '../../widgets/sosial_button.dart';
 import '../../widgets/form_auth.dart';
 import '../../services/auth_service.dart';
 
@@ -71,25 +71,25 @@ void _showSuccessSnackBar(String message) {
     ),
   );
 }
-  // <--- TAMBAHKAN METHOD INI UNTUK GOOGLE SIGN-IN
-  void _handleGoogleSignIn() async {
-    setState(() => _isLoading = true);
-    try {
-      User? user = await _authService.signInWithGoogle(); // Panggil method Google Sign-In
-      if (user != null) {
-        print('Google Sign-In successful: ${user.uid}');
-        Navigator.pushReplacementNamed(context, '/dashboard');
-      } else {
-        print('Google Sign-In cancelled or failed without explicit error.');
-        _showErrorSnackBar('Google Sign-In cancelled or failed.'); // Pengguna membatalkan
-      }
-    } catch (e) {
-      print('Google Sign-In error: $e');
-      _showErrorSnackBar(e.toString()); // Menampilkan error dari proses Google Sign-In
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
+  // // <--- TAMBAHKAN METHOD INI UNTUK GOOGLE SIGN-IN
+  // void _handleGoogleSignIn() async {
+  //   setState(() => _isLoading = true);
+  //   try {
+  //     User? user = await _authService.signInWithGoogle(); // Panggil method Google Sign-In
+  //     if (user != null) {
+  //       print('Google Sign-In successful: ${user.uid}');
+  //       Navigator.pushReplacementNamed(context, '/dashboard');
+  //     } else {
+  //       print('Google Sign-In cancelled or failed without explicit error.');
+  //       _showErrorSnackBar('Google Sign-In cancelled or failed.'); // Pengguna membatalkan
+  //     }
+  //   } catch (e) {
+  //     print('Google Sign-In error: $e');
+  //     _showErrorSnackBar(e.toString()); // Menampilkan error dari proses Google Sign-In
+  //   } finally {
+  //     setState(() => _isLoading = false);
+  //   }
+  // }
 
   // Helper untuk menampilkan SnackBar
   void _showErrorSnackBar(String message) {
@@ -140,9 +140,9 @@ void _showSuccessSnackBar(String message) {
               const SizedBox(height: 24),
               
               // Social Register Options
-              SosialButton(
-                onGooglePressed: _handleGoogleSignIn, // <--- PANGGIL METHOD INI
-              ),
+              // SosialButton(
+              //   onGooglePressed: _handleGoogleSignIn, // <--- PANGGIL METHOD INI
+              // ),
               //auth form 
               AuthForm(
                 formKey: _formKey,
